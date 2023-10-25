@@ -1,17 +1,22 @@
-//Importa o express
-const express = require("express");
+import express from "express";
+
 //Cria uma intancia do express
 const app = express();
-//Define uma porta
 
+const selecoes = [
+  { id: 1, nome: "Brasil", grupo: "G" },
+  { id: 2, nome: "Japão", grupo: "B" },
+  { id: 3, nome: "Alemanha", grupo: "G" },
+  { id: 4, nome: "Portugal", grupo: "B" },
+];
 
 //Criar rota padrão
-app.get("/", (request, response) => {
-  response.send("Rota acessada com sucesso");
+app.get("/", (req, res) => {
+  res.send("Rota acessada com sucesso");
 });
 
-
-//Escutar a porta criada
-app.listen(port, () => {
-  console.log(`Servidor rodando no endereço: http://localhost:${port}`);
+app.get("/selecoes", (req, res) => {
+  res.send("Vem pro fut");
 });
+
+export default app;
