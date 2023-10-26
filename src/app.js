@@ -3,6 +3,9 @@ import express from "express";
 //Cria uma intancia do express
 const app = express();
 
+//indica para o express ler em formato JSON
+app.use(express.json());
+
 const selecoes = [
   { id: 1, nome: "Brasil", grupo: "G" },
   { id: 2, nome: "Japão", grupo: "B" },
@@ -16,7 +19,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/selecoes", (req, res) => {
-  res.send("Vem pro fut");
+  res.status(200).send(selecoes);
+});
+
+app.post("/selecoes", (req, res) => {
+  selecoes.push(req.body);
+  res.status(201).send("Seleção cadastrada com sucesso!");
 });
 
 export default app;
