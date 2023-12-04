@@ -1,17 +1,11 @@
 import express from "express";
+import conection from "../../configs/conection.js"
 
 //Cria uma intancia do express
 const app = express();
 
 //indica para o express ler em formato JSON
 app.use(express.json());
-
-const selecoes = [
-  { id: 1, nome: "Brasil", grupo: "G" },
-  { id: 2, nome: "Japão", grupo: "B" },
-  { id: 3, nome: "Alemanha", grupo: "G" },
-  { id: 4, nome: "Portugal", grupo: "B" },
-];
 
 //Funções auxiliares
 function buscarSelecaoPorId(id) {
@@ -22,14 +16,16 @@ function buscarIndex(id) {
   return selecoes.findIndex(selecao => selecao.id == id)
 }
 
-//Criar rota padrão
-app.get("/", (req, res) => {
-  res.send("Rota acessada com sucesso");
-});
-
 //Listar todos
 app.get("/selecoes", (req, res) => {
-  res.status(200).send(selecoes);
+  const sql = "SELECT * FROM selecoes;";
+  conection.query(sql, (error, results, filds) => {
+    if (error) {
+      res.status(404).json({ 'erro': error })
+    } else {
+      res.status(200).json(results)
+    }
+  })
 });
 
 //Criar seleção
@@ -41,8 +37,19 @@ app.post("/selecoes", (req, res) => {
 
 //Listar seleção
 app.get("/selecoes/:id", (req, res) => {
-  let id = req.params.id
-  res.json(buscarSelecaoPorId(id)).status(200)
+  const id = req.params.id
+  const sql = 'SELECT * FROM selecoes WHERE id = ?;'
+  conection.query(sql, id, (error, results, fields) => {
+    if (error) {
+      res.status(404).json({ 'erro': error })
+    } else {
+      if (results.length === 0) {
+        res.status(404).json({ 'mensagem': 'Nenhum resultado encontrado.' });
+      } else {
+        res.status(200).json(results)
+      }
+    }
+  })
 })
 
 //Excluir seleção
