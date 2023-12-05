@@ -30,9 +30,15 @@ app.get("/selecoes", (req, res) => {
 
 //Criar seleção
 app.post("/selecoes", (req, res) => {
-  selecoes.push(req.body);
-  // res.status(201).send("Seleção cadastrada com sucesso!");
-  res.json(selecoes)
+  const selecao = req.body
+  const sql = "INSERT INTO selecoes SET ?;";
+  conection.query(sql, selecao, (error, results, fields) => {
+    if (error) {
+      res.status(400).json({ 'erro': error })
+    } else {
+      res.status(201).json(results)
+    }
+  })
 });
 
 //Listar seleção
@@ -52,23 +58,60 @@ app.get("/selecoes/:id", (req, res) => {
   })
 })
 
-//Excluir seleção
 app.delete("/selecoes/:id", (req, res) => {
-  let index = buscarIndex(req.params.id)
-  selecoes.splice(index, 1) //Corta um elemento de um array
-  if (selecoes[index]) {
-    res.status(202).send(`Seleção com id ${req.params.id} excluida com sucesso`)
-  } else {
-    res.send("Seleção não encontrada")
-  }
-})
+  const id = req.params.id;
+
+  // Verifica se o ID existe antes de executar a exclusão
+  const checkIfExistsSQL = 'SELECT * FROM selecoes WHERE id = ?;';
+  conection.query(checkIfExistsSQL, id, (error, results, fields) => {
+    if (error) {
+      res.status(400).json({ 'erro': error });
+    } else {
+      if (results.length > 0) {
+        // O ID existe, então podemos proceder com a exclusão
+        const deleteSQL = 'DELETE FROM selecoes WHERE id = ?;';
+        conection.query(deleteSQL, id, (deleteError, deleteResults, deleteFields) => {
+          if (deleteError) {
+            res.status(400).json({ 'erro': deleteError });
+          } else {
+            res.status(201).json(deleteResults);
+          }
+        });
+      } else {
+        // O ID não existe, exibir mensagem de alerta
+        res.status(404).json({ 'mensagem': 'ID não encontrado.' });
+      }
+    }
+  });
+});
 
 app.put("/selecoes/:id", (req, res) => {
-  let index = buscarIndex(req.params.id)
-  //Conteudo da seleção de acordo com o index é substituido pelo parametro que está sendo criado no corpo da requisição
-  selecoes[index].nome = req.body.nome
-  selecoes[index].grupo = req.body.grupo
-  res.json(selecoes)
-})
+  const id = req.params.id;
+  const selecao = req.body;
+
+  // Verifica se o ID existe antes de executar a atualização
+  const checkIfExistsSQL = 'SELECT * FROM selecoes WHERE id = ?;';
+  conection.query(checkIfExistsSQL, id, (checkError, checkResults, checkFields) => {
+    if (checkError) {
+      res.status(400).json({ 'erro': checkError });
+    } else {
+      if (checkResults.length > 0) {
+        // O ID existe, então podemos proceder com a atualização
+        const updateSQL = "UPDATE selecoes SET ? WHERE id = ?;";
+        conection.query(updateSQL, [selecao, id], (updateError, updateResults, updateFields) => {
+          if (updateError) {
+            res.status(400).json({ 'erro': updateError });
+          } else {
+            res.status(200).json(updateResults);
+          }
+        });
+      } else {
+        // O ID não existe, exibir mensagem de erro
+        res.status(404).json({ 'mensagem': 'ID não encontrado. Não é possível atualizar.' });
+      }
+    }
+  });
+});
+
 
 export default app;
