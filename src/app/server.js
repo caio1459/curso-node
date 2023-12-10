@@ -1,10 +1,9 @@
-import app from "./src/app/app.js";
+import app from "./app.js";
 
 //Define uma porta
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 //Escutar a porta criada
 app.listen(PORT, () => {
   console.log(`Servidor rodando no endereço: http://localhost:${PORT}`);
 });
-
